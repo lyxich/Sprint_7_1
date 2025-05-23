@@ -38,7 +38,7 @@ class TestCourierCreation:
         response = courier_page.create_courier(payload)
 
         assert response.status_code == 400
-        assert "message" in response.json()
+        assert response.json()["message"] == "Недостаточно данных для создания учетной записи"
 
     @allure.title("Нельзя создать двух одинаковых курьеров")
     def test_create_same_courier_twice(self):

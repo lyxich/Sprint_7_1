@@ -34,28 +34,33 @@ class TestCourierLogin:
         assert response.status_code == 404
         assert "message" in response.json()
 
-    @allure.title("Ошибка при отсутствии обязательного поля {missing_field}")
-    @pytest.mark.parametrize("missing_field", ["login", "password"])
-    def test_courier_login_missing_field(self, missing_field):
-        login = generate_random_string(10)
-        password = generate_random_string(10)
+    @allure.feature("Courier Login")
+    class TestCourierLogin:
 
-        payload = {
-            "login": login,
-            "password": password
-        }
+        @allure.title("Невозможно войти без логина")
+        def test_login_missing_login(self):
+            password = generate_random_string(10)
 
-        if missing_field in payload:
-            del payload[missing_field]
+            payload = {
+                "password": password
+            }
 
-        courier_page = CourierPage()
-        response = courier_page.login_courier(payload)
+            courier_page = CourierPage()
+            response = courier_page.login_courier(payload)
 
-        assert response.status_code in [400, 504], f"Получен неожиданный статус-код: {response.status_code}"
+            assert response.status_code == 400
+            assert response.json()["message"] == "Недостаточно данных для входа"
 
-        try:
-            json_data = response.json()
-            assert "message" in json_data
-        except requests.exceptions.JSONDecodeError:
-            # Если ответ не в формате JSON — проверяем, что статус 504
-            assert response.status_code == 504, "Должен быть 504, если ответ не JSON"
+        @allure.title("Невозможно войти без пароля")
+        def test_login_missing_password(self):
+            login = generate_random_string(10)
+
+            payload = {
+                "login": login
+            }
+
+            courier_page = CourierPage()
+            response = courier_page.login_courier(payload)
+
+            assert response.status_code == 400
+            assert response.json()["message"] == "Недостаточно данных для входа"
